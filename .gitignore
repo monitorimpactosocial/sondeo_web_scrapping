@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# clasp (Apps Script CLI)
+.clasp.json
+.clasprc.json
+
+# Environment
+.env
+.env.local
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Credentials (NEVER commit)
+credentials.json
+token.json
+service-account*.json
+
+# Temp
+*.tmp
+*.log

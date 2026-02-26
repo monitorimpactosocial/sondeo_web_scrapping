@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body style="margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;background:#f5f5f5">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;margin:0 auto;background:#ffffff">
+        <!-- Header -->
+        <tr>
+            <td style="background:linear-gradient(135deg,#1a237e,#6c63ff);padding:28px 32px;text-align:center">
+                <h1 style="color:#ffffff;font-size:22px;margin:0">📊 Monitor PARACEL</h1>
+                <p style="color:rgba(255,255,255,0.8);font-size:13px;margin:6px 0 0">Reporte diario de menciones —
+                    <?= fecha.substring(0,10) ?>
+                </p>
+            </td>
+        </tr>
+        <!-- KPIs -->
+        <tr>
+            <td style="padding:24px 32px 8px">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td width="25%" style="text-align:center;padding:12px">
+                            <div style="font-size:28px;font-weight:800;color:#6c63ff">
+                                <?= stats.nuevas ?>
+                            </div>
+                            <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px">Nuevas
+                            </div>
+                        </td>
+                        <td width="25%" style="text-align:center;padding:12px">
+                            <div style="font-size:28px;font-weight:800;color:#00c853">
+                                <?= stats.gateOK ?>
+                            </div>
+                            <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px">Gate OK
+                            </div>
+                        </td>
+                        <td width="25%" style="text-align:center;padding:12px">
+                            <div style="font-size:28px;font-weight:800;color:#ff9100">
+                                <?= stats.duplicadas ?>
+                            </div>
+                            <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px">
+                                Duplicadas</div>
+                        </td>
+                        <td width="25%" style="text-align:center;padding:12px">
+                            <div style="font-size:28px;font-weight:800;color:#ff5252">
+                                <?= stats.errores.length ?>
+                            </div>
+                            <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px">Errores
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <!-- Divider -->
+        <tr>
+            <td style="padding:0 32px">
+                <hr style="border:none;border-top:1px solid #eee">
+            </td>
+        </tr>
+        <!-- Mentions Table -->
+        <tr>
+            <td style="padding:16px 32px 8px">
+                <h2 style="font-size:16px;color:#333;margin:0 0 12px">Últimas Menciones</h2>
+                <table width="100%" cellpadding="8" cellspacing="0" style="font-size:12px;border-collapse:collapse">
+                    <tr style="background:#f0f0f5">
+                        <th style="text-align:left;color:#555;border-bottom:2px solid #ddd;padding:8px">Título</th>
+                        <th style="text-align:left;color:#555;border-bottom:2px solid #ddd;padding:8px;width:80px">
+                            Fuente</th>
+                        <th style="text-align:left;color:#555;border-bottom:2px solid #ddd;padding:8px;width:80px">
+                            Sentimiento</th>
+                    </tr>
+                    <? for (var i = 0; i < rows.length; i++) { ?>
+                    <tr style="border-bottom:1px solid #f0f0f0">
+                        <td style="padding:8px">
+                            <a href="<?= rows[i][7] ?>" style="color:#6c63ff;text-decoration:none">
+                                <?= rows[i][6].substring(0,70) ?>
+                            </a>
+                            <div style="font-size:10px;color:#999;margin-top:2px">
+                                <?= rows[i][9] ?>
+                            </div>
+                        </td>
+                        <td style="padding:8px;color:#666">
+                            <?= rows[i][5] ?>
+                        </td>
+                        <td style="padding:8px">
+                            <span
+                                style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;
+              background:<?= rows[i][13]==='Positivo' ? 'rgba(0,200,83,0.15);color:#00c853' : rows[i][13]==='Negativo' ? 'rgba(255,82,82,0.15);color:#ff5252' : 'rgba(255,152,0,0.15);color:#ff9100' ?>">
+                                <?= rows[i][13] ?>
+                            </span>
+                        </td>
+                    </tr>
+                    <? } ?>
+                </table>
+            </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+            <td style="padding:24px 32px;text-align:center;background:#fafafa;border-top:1px solid #eee">
+                <p style="font-size:11px;color:#999;margin:0">
+                    Monitor de Opinión PARACEL · Monitoreo de Impacto Social<br>
+                    Generado automáticamente el
+                    <?= fecha ?>
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>
