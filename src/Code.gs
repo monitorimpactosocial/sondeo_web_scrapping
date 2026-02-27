@@ -20,14 +20,14 @@ var CFG = {
     MEDIOS: ['Dominio','Nombre','Pais','Tipo','Confiabilidad','Activo']
   },
   DEFAULT_KEYWORDS: [
-    ['PARACEL Paraguay celulosa','SI',0,''],
-    ['PARACEL Concepción planta','SI',0,''],
-    ['Paracel pulp mill Paraguay','SI',0,''],
-    ['PARACEL eucalipto Paraguay','SI',0,''],
-    ['planta celulosa Concepción Paraguay','SI',0,''],
-    ['PARACEL inversión Paraguay','SI',0,''],
-    ['PARACEL empleo Concepción','SI',0,''],
-    ['PARACEL ambiental Paraguay','SI',0,'']
+    ['"Paracel" Paraguay','SI',0,''],
+    ['"Paracel" celulosa','SI',0,''],
+    ['"Paracel" Concepción','SI',0,''],
+    ['"Paracel" Zapag','SI',0,''],
+    ['"Paracel" Heinzel','SI',0,''],
+    ['"Paracel" forestal','SI',0,''],
+    ['"Paracel" eucalipto','SI',0,''],
+    ['"Paracel" inversión','SI',0,'']
   ],
   DEFAULT_PARAMS: [
     ['GATE_ACTIVO','SI','Activar filtro de contexto Paraguay'],
@@ -72,17 +72,20 @@ var GATE = {
     'cordillera','paraguarí','paraguari','caazapá','caazapa','rio paraguay',
     'paraguayo','paraguaya','paraguayos','paraguayas','guaraní','guarani',
     'itaipu','yacyreta','villa hayes','limpio','luque','san lorenzo',
-    'fernando de la mora','lambare','mariano roque alonso','capiata'],
+    'fernando de la mora','lambare','mariano roque alonso','capiata',
+    'paso horqueta','belén','belen','loreto','puerto rosario','ruta bioceánica','bioceanica'],
   PLANT_ANCHORS: ['celulosa','planta','fábrica','fabrica','pulp','mill',
     'eucalipto','eucalyptus','forestal','forestación','forestacion',
     'deforestación','deforestacion','papel','paper','biomasa','biomass',
     'pasteras','pastera','industrial','industria','inversión','inversion',
     'medioambiental','ambiental','impacto','tonelada','producción','produccion',
-    'exportación','exportacion','materia prima','madera','plantación','plantacion'],
+    'exportación','exportacion','materia prima','madera','plantación','plantacion',
+    'zapag','heinzel','girindus','sylvamo','copetrol'],
   EXCLUSIONS: ['islas paracel','paracel islands','spratly','south china sea',
     'mar de china','mer de chine','hainan','vietnam','filipinas','philippines',
     'spratlys','paracelso','paracelsus','paracel logistics','paracel group',
-    'paracel shipping','îles paracel','quần đảo hoàng sa']
+    'paracel shipping','îles paracel','quần đảo hoàng sa','xisha','hoang sa',
+    'taiwan','beijing','mar meridional','pekin','pekín','china','chinas']
 };
 
 // ─── SENTIMIENTO LÉXICO ──────────────────────────────────────────────────────
@@ -603,6 +606,18 @@ function deleteKeyword(keyword) {
   var data = sheet.getDataRange().getValues();
   for (var i=1; i<data.length; i++) { if (data[i][0]===keyword) { sheet.deleteRow(i+1); return true; } }
   return false;
+}
+
+function resetKeywords() {
+  var ss = getSpreadsheet_();
+  var kwSheet = ss.getSheetByName(CFG.SHEETS.KEYWORDS);
+  if (!kwSheet) return { success: false, message: 'La pestaña KEYWORDS no existe.' };
+  
+  if (kwSheet.getLastRow() > 1) {
+    kwSheet.getRange(2, 1, kwSheet.getLastRow() - 1, 4).clearContent();
+  }
+  kwSheet.getRange(2, 1, CFG.DEFAULT_KEYWORDS.length, 4).setValues(CFG.DEFAULT_KEYWORDS);
+  return { success: true, message: 'Keywords reseteadas a las por defecto exitosamente.' };
 }
 
 function getLastExecution() {
