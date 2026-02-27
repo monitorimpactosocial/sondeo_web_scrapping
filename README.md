@@ -2,7 +2,9 @@
 
 **Sistema de monitoreo automatizado de menciones web sobre PARACEL (planta de celulosa, Paraguay).**
 
-Recolecta, filtra, clasifica y visualiza menciones desde Google News RSS, Reddit y medios paraguayos. Incluye dashboard interactivo con filtros, gráficos y KPIs.
+Recolecta, filtra, clasifica y visualiza menciones desde Google News RSS, Bing News, Reddit y medios paraguayos. Incluye dashboard interactivo con filtros, gráficos y KPIs.
+
+> 🌐 **Web App desplegada:** [Abrir Monitor PARACEL](https://script.google.com/macros/s/AKfycbymg87nCyTRRAEJTVwCOBrC0IJ-Sc2e0NVOdCrfJcDzw0zJIjIcJyLi7IElTlwpnzgZkg/exec)
 
 ---
 
@@ -73,7 +75,9 @@ sondeo_web_scrapping/
 3. Ejecutar como: **Yo (tu email)**
 4. Quién tiene acceso: **Cualquier persona** (o restringir según necesidad)
 5. Click **Implementar** → copiar la URL generada
-6. Abrir la URL en el navegador → verificar que las dos pestañas funcionan
+6. **URL actual desplegada:**  
+   https://script.google.com/macros/s/AKfycbymg87nCyTRRAEJTVwCOBrC0IJ-Sc2e0NVOdCrfJcDzw0zJIjIcJyLi7IElTlwpnzgZkg/exec
+7. Abrir la URL en el navegador → verificar que las 4 pestañas funcionan
 
 ### Paso 5 — Activar Trigger Diario
 
