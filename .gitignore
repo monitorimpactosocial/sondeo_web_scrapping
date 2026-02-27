@@ -28,3 +28,7 @@ service-account*.json
 # Temp
 *.tmp
 *.log
+
+# Reference project (Z.ai scaffold)
+sondeo_webscrappin_zai/
+*.tar

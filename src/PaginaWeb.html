@@ -1,556 +1,1469 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<title>Monitor de Opinión — PARACEL</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<style>
-/* ─── RESET & BASE ─────────────────────────────────── */
-*{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg-primary:#0a0e1a;--bg-card:rgba(15,20,40,0.85);
-  --bg-glass:rgba(255,255,255,0.04);--bg-glass-hover:rgba(255,255,255,0.08);
-  --accent:#6c63ff;--accent-light:#8b83ff;--accent-glow:rgba(108,99,255,0.3);
-  --green:#00e676;--red:#ff5252;--amber:#ffd740;--cyan:#00e5ff;
-  --text:#e8eaf6;--text-dim:#9e9faf;--text-muted:#6b6c7e;
-  --border:rgba(255,255,255,0.08);--radius:12px;--radius-sm:8px;
-  --shadow:0 8px 32px rgba(0,0,0,0.4);
-  --font:'Segoe UI','Inter',system-ui,sans-serif;
-}
-body{font-family:var(--font);background:var(--bg-primary);color:var(--text);min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(108,99,255,0.08),transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(0,229,255,0.05),transparent 50%);pointer-events:none;z-index:0}
+  <meta charset="UTF-8">
+  <title>Monitor de Opinión — PARACEL v2.0</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
 
-/* ─── HEADER ───────────────────────────────────────── */
-.header{background:var(--bg-card);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
-.header-logo{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;box-shadow:0 0 20px var(--accent-glow)}
-.header-title{flex:1}
-.header-title h1{font-size:20px;font-weight:700;background:linear-gradient(90deg,var(--text),var(--accent-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.header-title p{font-size:12px;color:var(--text-dim);margin-top:2px}
-.header-badge{background:var(--bg-glass);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:11px;color:var(--green);display:flex;align-items:center;gap:6px}
-.header-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+    :root {
+      --bg: #030712;
+      --bg-card: rgba(17, 24, 39, 0.85);
+      --bg-glass: rgba(255, 255, 255, 0.04);
+      --bg-hover: rgba(255, 255, 255, 0.08);
+      --blue: #3b82f6;
+      --emerald: #10b981;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --purple: #8b5cf6;
+      --cyan: #06b6d4;
+      --text: #e5e7eb;
+      --text-dim: #9ca3af;
+      --text-muted: #6b7280;
+      --border: rgba(75, 85, 99, 0.3);
+      --radius: 12px;
+      --font: 'Segoe UI', 'Inter', system-ui, sans-serif;
+    }
 
-/* ─── TABS ─────────────────────────────────────────── */
-.tabs{display:flex;gap:4px;padding:12px 32px 0;background:var(--bg-card);border-bottom:1px solid var(--border)}
-.tab{padding:10px 24px;font-size:13px;font-weight:600;color:var(--text-dim);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all .3s}
-.tab:hover{color:var(--text)}
-.tab.active{color:var(--accent-light);border-bottom-color:var(--accent)}
-.tab-content{display:none;padding:24px 32px;position:relative;z-index:1}
-.tab-content.active{display:block;animation:fadeIn .4s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden
+    }
 
-/* ─── CARDS & KPIs ─────────────────────────────────── */
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
-.kpi{background:var(--bg-card);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:all .3s}
-.kpi:hover{border-color:var(--accent);box-shadow:0 0 20px var(--accent-glow);transform:translateY(-2px)}
-.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px}
-.kpi-value{font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--accent-light),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.kpi-sub{font-size:11px;color:var(--text-dim);margin-top:4px}
-.card{background:var(--bg-card);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
-.card-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+    /* Background blobs */
+    .bg-effects {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden
+    }
 
-/* ─── FILTERS ──────────────────────────────────────── */
-.filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;align-items:flex-end}
-.filter-group{display:flex;flex-direction:column;gap:4px}
-.filter-group label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted)}
-.filter-group select,.filter-group input{background:var(--bg-glass);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:8px 12px;font-size:12px;font-family:var(--font);outline:none;min-width:140px;transition:border-color .3s}
-.filter-group select:focus,.filter-group input:focus{border-color:var(--accent)}
-.filter-group select option{background:#1a1e2e;color:var(--text)}
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px)
+    }
 
-/* ─── TOGGLE ───────────────────────────────────────── */
-.toggle-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim)}
-.toggle{position:relative;width:36px;height:20px;cursor:pointer}
-.toggle input{display:none}
-.toggle .slider{position:absolute;inset:0;background:var(--bg-glass);border:1px solid var(--border);border-radius:20px;transition:all .3s}
-.toggle .slider::before{content:'';position:absolute;width:14px;height:14px;left:3px;top:2px;background:var(--text-dim);border-radius:50%;transition:all .3s}
-.toggle input:checked+.slider{background:var(--accent);border-color:var(--accent)}
-.toggle input:checked+.slider::before{transform:translateX(16px);background:#fff}
+    .blob-1 {
+      top: -10%;
+      right: -10%;
+      width: 400px;
+      height: 400px;
+      background: rgba(59, 130, 246, 0.08);
+      animation: blobPulse 4s ease-in-out infinite
+    }
 
-/* ─── BUTTONS ──────────────────────────────────────── */
-.btn{padding:10px 20px;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;transition:all .3s;font-family:var(--font)}
-.btn-primary{background:linear-gradient(135deg,var(--accent),#5a52d5);color:#fff;box-shadow:0 4px 15px var(--accent-glow)}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 25px var(--accent-glow)}
-.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
-.btn-sm{padding:6px 14px;font-size:11px;border-radius:6px}
-.btn-outline{background:transparent;color:var(--accent-light);border:1px solid var(--accent)}
-.btn-outline:hover{background:var(--accent);color:#fff}
-.btn-danger{background:var(--red);color:#fff}
+    .blob-2 {
+      bottom: -10%;
+      left: -10%;
+      width: 400px;
+      height: 400px;
+      background: rgba(16, 185, 129, 0.06);
+      animation: blobPulse 5s ease-in-out infinite 1s
+    }
 
-/* ─── TABLE ────────────────────────────────────────── */
-.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{background:rgba(108,99,255,0.15);color:var(--accent-light);font-weight:600;text-transform:uppercase;letter-spacing:.5px;font-size:10px;padding:10px 12px;text-align:left;position:sticky;top:0;white-space:nowrap}
-td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-dim);max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-tr:hover td{background:var(--bg-glass-hover);color:var(--text)}
-td a{color:var(--cyan);text-decoration:none}
-td a:hover{text-decoration:underline}
-.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
-.badge-pos{background:rgba(0,230,118,0.15);color:var(--green)}
-.badge-neg{background:rgba(255,82,82,0.15);color:var(--red)}
-.badge-neu{background:rgba(255,215,64,0.15);color:var(--amber)}
-.badge-gate{background:rgba(0,229,255,0.15);color:var(--cyan)}
+    .blob-3 {
+      top: 40%;
+      left: 40%;
+      width: 500px;
+      height: 500px;
+      background: rgba(139, 92, 246, 0.04)
+    }
 
-/* ─── CHARTS GRID ──────────────────────────────────── */
-.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;margin-bottom:24px}
-.chart-container{position:relative;height:260px}
+    @keyframes blobPulse {
 
-/* ─── SEARCH TAB ───────────────────────────────────── */
-.status-panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:16px 0}
-.status-item{background:var(--bg-glass);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;display:flex;flex-direction:column;gap:4px}
-.status-item .label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted)}
-.status-item .value{font-size:14px;font-weight:600;color:var(--text)}
-.kw-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.kw-chip{background:var(--bg-glass);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;display:flex;align-items:center;gap:8px;transition:all .3s}
-.kw-chip.active{border-color:var(--green);color:var(--green)}
-.kw-chip.inactive{border-color:var(--text-muted);color:var(--text-muted);opacity:0.6}
-.kw-toggle{width:8px;height:8px;border-radius:50%;cursor:pointer}
-.kw-toggle.on{background:var(--green)}
-.kw-toggle.off{background:var(--text-muted)}
-.add-kw{display:flex;gap:8px;margin-top:12px}
-.add-kw input{flex:1}
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1)
+      }
 
-/* ─── PAGINATION ───────────────────────────────────── */
-.pagination{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:16px}
-.pagination button{background:var(--bg-glass);border:1px solid var(--border);color:var(--text-dim);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer}
-.pagination button:hover{border-color:var(--accent);color:var(--accent-light)}
-.pagination button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-.pagination span{font-size:12px;color:var(--text-dim)}
+      50% {
+        opacity: 0.6;
+        transform: scale(1.1)
+      }
+    }
 
-/* ─── LOADING & TOAST ──────────────────────────────── */
-.loading{display:none;position:fixed;inset:0;background:rgba(10,14,26,0.8);z-index:1000;align-items:center;justify-content:center;flex-direction:column;gap:16px}
-.loading.show{display:flex}
-.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-size:14px;color:var(--text-dim)}
-.toast{position:fixed;bottom:24px;right:24px;background:var(--bg-card);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:12px 20px;font-size:13px;color:var(--text);z-index:1001;box-shadow:var(--shadow);transform:translateY(100px);opacity:0;transition:all .4s}
-.toast.show{transform:translateY(0);opacity:1}
+    /* Header */
+    .header {
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3)
+    }
 
-/* ─── RESPONSIVE ───────────────────────────────────── */
-@media(max-width:768px){
-  .header{padding:12px 16px}
-  .tabs{padding:8px 16px 0}
-  .tab-content{padding:16px}
-  .filters{flex-direction:column}
-  .filter-group select,.filter-group input{min-width:100%}
-  .charts-grid{grid-template-columns:1fr}
-  .kpi-grid{grid-template-columns:repeat(2,1fr)}
-}
-</style>
+    .header-logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--blue), var(--emerald));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      box-shadow: 0 0 25px rgba(59, 130, 246, 0.3);
+      position: relative
+    }
+
+    .header-logo::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      right: -3px;
+      width: 14px;
+      height: 14px;
+      background: var(--emerald);
+      border-radius: 50%;
+      border: 2px solid var(--bg);
+      animation: blobPulse 2s infinite
+    }
+
+    .header-title {
+      flex: 1
+    }
+
+    .header-title h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff
+    }
+
+    .header-title p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      padding: 10px 28px 0;
+      background: rgba(17, 24, 39, 0.5);
+      border-bottom: 1px solid var(--border)
+    }
+
+    .tab {
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 2px solid transparent;
+      transition: all .3s;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .tab:hover {
+      color: var(--text)
+    }
+
+    .tab.active {
+      color: var(--blue);
+      border-bottom-color: var(--blue)
+    }
+
+    .tab .badge-count {
+      background: var(--red);
+      color: #fff;
+      font-size: 9px;
+      padding: 1px 6px;
+      border-radius: 10px;
+      font-weight: 700
+    }
+
+    .tab-content {
+      display: none;
+      padding: 24px 28px;
+      position: relative;
+      z-index: 1
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeUp .4s ease
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    /* KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px
+    }
+
+    .kpi {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: all .3s;
+      cursor: default
+    }
+
+    .kpi:hover {
+      border-color: var(--blue);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(59, 130, 246, 0.15)
+    }
+
+    .kpi-gradient {
+      position: absolute;
+      inset: 0;
+      opacity: 0.05
+    }
+
+    .kpi-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted)
+    }
+
+    .kpi-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px
+    }
+
+    .kpi-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1
+    }
+
+    .kpi-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    .kpi-sub .trend-up {
+      color: var(--emerald)
+    }
+
+    .kpi-sub .trend-down {
+      color: var(--red)
+    }
+
+    .kpi-sparkline {
+      height: 30px;
+      margin-top: 8px
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 14px;
+      backdrop-filter: blur(8px)
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    /* Filters */
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+      align-items: flex-end
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px
+    }
+
+    .filter-group label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted)
+    }
+
+    .filter-group select,
+    .filter-group input {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 8px 12px;
+      font-size: 12px;
+      font-family: var(--font);
+      outline: none;
+      min-width: 130px;
+      transition: border-color .3s
+    }
+
+    .filter-group select:focus,
+    .filter-group input:focus {
+      border-color: var(--blue)
+    }
+
+    .filter-group select option {
+      background: #1e293b;
+      color: var(--text)
+    }
+
+    /* Toggle */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-dim);
+      cursor: pointer
+    }
+
+    .toggle {
+      position: relative;
+      width: 36px;
+      height: 20px
+    }
+
+    .toggle input {
+      display: none
+    }
+
+    .toggle .slider {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      transition: all .3s
+    }
+
+    .toggle .slider::before {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      left: 3px;
+      top: 2px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      transition: all .3s
+    }
+
+    .toggle input:checked+.slider {
+      background: var(--blue);
+      border-color: var(--blue)
+    }
+
+    .toggle input:checked+.slider::before {
+      transform: translateX(16px);
+      background: #fff
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 9px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .3s;
+      font-family: var(--font);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--blue), #2563eb);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3)
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 25px rgba(59, 130, 246, 0.4)
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 11px
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--blue);
+      border: 1px solid var(--blue)
+    }
+
+    .btn-outline:hover {
+      background: rgba(59, 130, 246, 0.1)
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-dim);
+      border: 1px solid var(--border)
+    }
+
+    .btn-ghost:hover {
+      background: var(--bg-hover);
+      color: var(--text)
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, 0.3)
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.25)
+    }
+
+    /* Mention Cards */
+    .mention-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px
+    }
+
+    .mention-card {
+      background: rgba(17, 24, 39, 0.7);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      transition: all .3s;
+      animation: fadeUp .4s ease
+    }
+
+    .mention-card:hover {
+      border-color: rgba(59, 130, 246, 0.3);
+      background: rgba(30, 41, 59, 0.7);
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.05)
+    }
+
+    .mention-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap
+    }
+
+    .mention-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.4
+    }
+
+    .mention-title a {
+      color: #fff;
+      text-decoration: none;
+      transition: color .2s
+    }
+
+    .mention-title a:hover {
+      color: var(--blue);
+      text-decoration: underline
+    }
+
+    .mention-snippet {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.5;
+      margin: 8px 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden
+    }
+
+    .mention-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px
+    }
+
+    .mention-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      border: 1px solid transparent
+    }
+
+    .badge-pos {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--emerald);
+      border-color: rgba(16, 185, 129, 0.3)
+    }
+
+    .badge-neg {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--red);
+      border-color: rgba(239, 68, 68, 0.3)
+    }
+
+    .badge-neu {
+      background: rgba(107, 114, 128, 0.15);
+      color: var(--text-dim);
+      border-color: rgba(107, 114, 128, 0.3)
+    }
+
+    .badge-source {
+      background: var(--bg-glass);
+      color: var(--text-dim);
+      border-color: var(--border)
+    }
+
+    .badge-py {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--blue);
+      border-color: rgba(59, 130, 246, 0.3)
+    }
+
+    .badge-gate-ok {
+      color: var(--emerald)
+    }
+
+    .badge-gate-no {
+      color: var(--red)
+    }
+
+    .badge-topic {
+      background: rgba(139, 92, 246, 0.1);
+      color: var(--purple);
+      border-color: rgba(139, 92, 246, 0.2)
+    }
+
+    /* Alert Cards */
+    .alert-card {
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid;
+      transition: all .3s;
+      margin-bottom: 8px
+    }
+
+    .alert-critical {
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.3)
+    }
+
+    .alert-high {
+      background: rgba(249, 115, 22, 0.08);
+      border-color: rgba(249, 115, 22, 0.3)
+    }
+
+    .alert-medium {
+      background: rgba(234, 179, 8, 0.08);
+      border-color: rgba(234, 179, 8, 0.3)
+    }
+
+    .alert-low {
+      background: rgba(59, 130, 246, 0.08);
+      border-color: rgba(59, 130, 246, 0.3)
+    }
+
+    .alert-card .alert-msg {
+      font-size: 13px;
+      color: #fff;
+      font-weight: 500
+    }
+
+    .alert-card .alert-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px
+    }
+
+    /* Charts Grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px
+    }
+
+    .chart-container {
+      position: relative;
+      height: 280px
+    }
+
+    .chart-wide {
+      grid-column: span 2
+    }
+
+    /* Keyword chips */
+    .kw-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0
+    }
+
+    .kw-chip {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all .3s
+    }
+
+    .kw-chip.on {
+      border-color: rgba(16, 185, 129, 0.4);
+      color: var(--emerald)
+    }
+
+    .kw-chip.off {
+      border-color: var(--border);
+      color: var(--text-muted);
+      opacity: 0.5
+    }
+
+    .kw-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all .2s
+    }
+
+    .kw-dot.on {
+      background: var(--emerald)
+    }
+
+    .kw-dot.off {
+      background: var(--text-muted)
+    }
+
+    .kw-del {
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-left: 4px;
+      transition: color .2s
+    }
+
+    .kw-del:hover {
+      color: var(--red)
+    }
+
+    .kw-count {
+      font-size: 10px;
+      color: var(--text-muted)
+    }
+
+    /* Status panel */
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin: 14px 0
+    }
+
+    .status-item {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center
+    }
+
+    .status-item .s-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted)
+    }
+
+    .status-item .s-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 4px
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      margin-top: 14px
+    }
+
+    .pagination button {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+      cursor: pointer
+    }
+
+    .pagination button:hover {
+      border-color: var(--blue)
+    }
+
+    .pagination button.active {
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue)
+    }
+
+    .pagination span {
+      font-size: 12px;
+      color: var(--text-muted)
+    }
+
+    /* Loading */
+    .loading {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.85);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      backdrop-filter: blur(4px)
+    }
+
+    .loading.show {
+      display: flex
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .loading-text {
+      font-size: 14px;
+      color: var(--text-dim)
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--blue);
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 13px;
+      color: var(--text);
+      z-index: 1001;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all .4s
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1
+    }
+
+    /* Progress */
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--bg-glass);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 8px
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--emerald));
+      border-radius: 3px;
+      transition: width .5s ease
+    }
+
+    /* Responsive */
+    @media(max-width:768px) {
+      .header {
+        padding: 12px 16px
+      }
+
+      .tabs {
+        padding: 8px 16px 0;
+        overflow-x: auto
+      }
+
+      .tab-content {
+        padding: 16px
+      }
+
+      .filters {
+        flex-direction: column
+      }
+
+      .charts-grid {
+        grid-template-columns: 1fr
+      }
+
+      .chart-wide {
+        grid-column: span 1
+      }
+
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr)
+      }
+    }
+  </style>
 </head>
+
 <body>
-
-<!-- HEADER -->
-<div class="header">
-  <div class="header-logo">P</div>
-  <div class="header-title">
-    <h1>Monitor de Opinión — PARACEL</h1>
-    <p>Sondeo Web Scrapping · Monitoreo de Impacto Social</p>
+  <div class="bg-effects">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
   </div>
-  <div class="header-badge">Sistema Activo</div>
-</div>
 
-<!-- TABS -->
-<div class="tabs">
-  <button class="tab active" onclick="switchTab('busqueda')">🔍 Búsqueda</button>
-  <button class="tab" onclick="switchTab('tablero')">📊 Tablero</button>
-</div>
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-logo">P</div>
+    <div class="header-title">
+      <h1>Monitor de Opinión — PARACEL</h1>
+      <p>Sondeo Web Scrapping · Monitoreo de Impacto Social · v2.0</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">📥 CSV</button>
+      <button class="btn btn-ghost btn-sm" onclick="refreshAll()">🔄</button>
+    </div>
+  </div>
 
-<!-- ═══════════ TAB 1: BÚSQUEDA ═══════════ -->
-<div id="tab-busqueda" class="tab-content active">
-  <div class="card">
-    <div class="card-title">⚡ Ejecución Manual</div>
-    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-      <button class="btn btn-primary" id="btnSearch" onclick="ejecutarBusqueda()">🚀 Ejecutar Búsqueda</button>
-      <div class="toggle-row">
-        <label class="toggle"><input type="checkbox" id="toggleGate" checked><span class="slider"></span></label>
-        Gate activo
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+    <button class="tab" onclick="switchTab('busqueda')">🔍 Búsqueda</button>
+    <button class="tab" onclick="switchTab('menciones')">📰 Menciones</button>
+    <button class="tab" onclick="switchTab('alertas')">🔔 Alertas <span class="badge-count" id="alertBadge"
+        style="display:none">0</span></button>
+  </div>
+
+  <!-- ══════ TAB: DASHBOARD ══════ -->
+  <div id="tab-dashboard" class="tab-content active">
+    <div class="kpi-grid" id="kpiGrid">
+      <div class="kpi">
+        <div class="kpi-gradient" style="background:linear-gradient(135deg,var(--blue),var(--cyan))"></div>
+        <div class="kpi-header"><span class="kpi-label">Total Menciones</span>
+          <div class="kpi-icon" style="background:linear-gradient(135deg,var(--blue),var(--cyan))">📊</div>
+        </div>
+        <div class="kpi-value" id="kpiTotal">0</div>
+        <div class="kpi-sub" id="kpiTotalSub"></div>
       </div>
-      <div class="toggle-row">
-        <label class="toggle"><input type="checkbox" id="toggleSoloPY"><span class="slider"></span></label>
-        Solo medios PY
+      <div class="kpi">
+        <div class="kpi-gradient" style="background:linear-gradient(135deg,var(--emerald),#059669)"></div>
+        <div class="kpi-header"><span class="kpi-label">Menciones Hoy</span>
+          <div class="kpi-icon" style="background:linear-gradient(135deg,var(--emerald),#059669)">📈</div>
+        </div>
+        <div class="kpi-value" id="kpiHoy">0</div>
+        <div class="kpi-sub" id="kpiHoySub"></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-gradient" style="background:linear-gradient(135deg,var(--amber),#d97706)"></div>
+        <div class="kpi-header"><span class="kpi-label">Sentimiento Prom.</span>
+          <div class="kpi-icon" style="background:linear-gradient(135deg,var(--amber),#d97706)">😊</div>
+        </div>
+        <div class="kpi-value" id="kpiSent">0</div>
+        <div class="kpi-sub" id="kpiSentSub"></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-gradient" style="background:linear-gradient(135deg,var(--purple),#7c3aed)"></div>
+        <div class="kpi-header"><span class="kpi-label">Confianza Prom.</span>
+          <div class="kpi-icon" style="background:linear-gradient(135deg,var(--purple),#7c3aed)">🎯</div>
+        </div>
+        <div class="kpi-value" id="kpiConf">0%</div>
+        <div class="kpi-sub" id="kpiConfSub"></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-gradient" style="background:linear-gradient(135deg,var(--cyan),#0891b2)"></div>
+        <div class="kpi-header"><span class="kpi-label">Gate Pass Rate</span>
+          <div class="kpi-icon" style="background:linear-gradient(135deg,var(--cyan),#0891b2)">🛡️</div>
+        </div>
+        <div class="kpi-value" id="kpiGate">0%</div>
+        <div class="kpi-sub" id="kpiGateSub"></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-gradient" style="background:linear-gradient(135deg,var(--red),#dc2626)"></div>
+        <div class="kpi-header"><span class="kpi-label">Top Medio PY</span>
+          <div class="kpi-icon" style="background:linear-gradient(135deg,var(--red),#dc2626)">🇵🇾</div>
+        </div>
+        <div class="kpi-value" id="kpiTopPY" style="font-size:18px">—</div>
+        <div class="kpi-sub" id="kpiTopPYSub"></div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="card chart-wide">
+        <div class="card-title">📈 Tendencia Semanal (últimos 7 días)</div>
+        <div class="chart-container"><canvas id="chartTrend"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">😊 Sentimiento</div>
+        <div class="chart-container"><canvas id="chartSent"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📡 Fuentes</div>
+        <div class="chart-container"><canvas id="chartSrc"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🇵🇾 Medios Paraguay</div>
+        <div class="chart-container"><canvas id="chartMedia"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏷️ Temas</div>
+        <div class="chart-container"><canvas id="chartTopics"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🎯 Análisis Multidimensional</div>
+        <div class="chart-container"><canvas id="chartRadar"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🌍 Origen de Medios</div>
+        <div class="chart-container"><canvas id="chartOrigin"></canvas></div>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-title">📡 Último Estado</div>
-    <div class="status-panel" id="statusPanel">
-      <div class="status-item"><span class="label">Última ejecución</span><span class="value" id="stLastRun">—</span></div>
-      <div class="status-item"><span class="label">Duración</span><span class="value" id="stDuration">—</span></div>
-      <div class="status-item"><span class="label">Nuevas menciones</span><span class="value" id="stNew">—</span></div>
-      <div class="status-item"><span class="label">Duplicadas</span><span class="value" id="stDup">—</span></div>
-      <div class="status-item"><span class="label">Gate OK</span><span class="value" id="stGateOK">—</span></div>
-      <div class="status-item"><span class="label">Errores</span><span class="value" id="stErrors">—</span></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">🔑 Palabras Clave</div>
-    <div id="kwList" class="kw-list"></div>
-    <div class="add-kw">
-      <input type="text" id="newKwInput" placeholder="Nueva keyword…" class="filter-group">
-      <button class="btn btn-sm btn-outline" onclick="agregarKeyword()">+ Agregar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════ TAB 2: TABLERO ═══════════ -->
-<div id="tab-tablero" class="tab-content">
-  <!-- FILTERS -->
-  <div class="card" style="margin-bottom:20px">
-    <div class="card-title">🎛️ Filtros</div>
-    <div class="filters">
-      <div class="filter-group"><label>Fuente</label><select id="fFuente"><option value="">Todas</option></select></div>
-      <div class="filter-group"><label>Medio PY</label><select id="fMedioPY"><option value="">Todos</option></select></div>
-      <div class="filter-group"><label>Sentimiento</label><select id="fSentimiento"><option value="">Todos</option></select></div>
-      <div class="filter-group"><label>Tema</label><select id="fTema"><option value="">Todos</option></select></div>
-      <div class="filter-group"><label>Desde</label><input type="date" id="fDesde"></div>
-      <div class="filter-group"><label>Hasta</label><input type="date" id="fHasta"></div>
-      <div class="filter-group"><label>Buscar</label><input type="text" id="fBusqueda" placeholder="Texto libre…"></div>
-      <div class="filter-group" style="justify-content:flex-end">
-        <div class="toggle-row"><label class="toggle"><input type="checkbox" id="fGateOnly"><span class="slider"></span></label> Solo Gate OK</div>
+  <!-- ══════ TAB: BÚSQUEDA ══════ -->
+  <div id="tab-busqueda" class="tab-content">
+    <div class="card">
+      <div class="card-title">⚡ Ejecución</div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-primary" id="btnSearch" onclick="ejecutarBusqueda()">🚀 Ejecutar Búsqueda</button>
+        <span id="searchProgress" style="font-size:13px;color:var(--text-dim)"></span>
       </div>
-      <div class="filter-group" style="justify-content:flex-end">
-        <div class="toggle-row"><label class="toggle"><input type="checkbox" id="fSoloPY"><span class="slider"></span></label> Solo Medios PY</div>
-      </div>
-      <div class="filter-group" style="justify-content:flex-end">
-        <button class="btn btn-primary btn-sm" onclick="applyFilters()">Aplicar</button>
-        <button class="btn btn-sm btn-outline" onclick="resetFilters()" style="margin-top:4px">Limpiar</button>
+      <div id="searchProgressBar" style="display:none">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
       </div>
     </div>
-  </div>
-
-  <!-- KPIs -->
-  <div class="kpi-grid" id="kpiGrid">
-    <div class="kpi"><div class="kpi-label">Total Menciones</div><div class="kpi-value" id="kpiTotal">0</div></div>
-    <div class="kpi"><div class="kpi-label">Menciones Hoy</div><div class="kpi-value" id="kpiHoy">0</div></div>
-    <div class="kpi"><div class="kpi-label">% Positivas</div><div class="kpi-value" id="kpiPos">0%</div><div class="kpi-sub" id="kpiPosDetail"></div></div>
-    <div class="kpi"><div class="kpi-label">Top Medio PY</div><div class="kpi-value" id="kpiTopPY" style="font-size:18px">—</div></div>
-  </div>
-
-  <!-- CHARTS -->
-  <div class="charts-grid">
-    <div class="card"><div class="card-title">📈 Tendencia Diaria</div><div class="chart-container"><canvas id="chartTrend"></canvas></div></div>
-    <div class="card"><div class="card-title">😊 Sentimiento</div><div class="chart-container"><canvas id="chartSent"></canvas></div></div>
-    <div class="card"><div class="card-title">📡 Fuentes</div><div class="chart-container"><canvas id="chartSrc"></canvas></div></div>
-    <div class="card"><div class="card-title">🇵🇾 Medios Paraguay</div><div class="chart-container"><canvas id="chartMedia"></canvas></div></div>
-    <div class="card" style="grid-column:span 2"><div class="card-title">🏷️ Temas</div><div class="chart-container"><canvas id="chartTopics"></canvas></div></div>
-  </div>
-
-  <!-- DATA TABLE -->
-  <div class="card">
-    <div class="card-title">📋 Menciones <span id="tableCount" style="font-weight:400;color:var(--text-dim);font-size:12px"></span></div>
-    <div class="table-wrap" style="max-height:500px;overflow-y:auto">
-      <table id="dataTable">
-        <thead><tr>
-          <th>Fecha</th><th>Fuente</th><th>Título</th><th>Dominio</th>
-          <th>Medio PY</th><th>Gate</th><th>Sentimiento</th><th>Temas</th>
-        </tr></thead>
-        <tbody id="tableBody"></tbody>
-      </table>
+    <div class="card">
+      <div class="card-title">📡 Último Estado</div>
+      <div class="status-grid" id="statusPanel">
+        <div class="status-item">
+          <div class="s-label">Última ejecución</div>
+          <div class="s-value" id="stLast">—</div>
+        </div>
+        <div class="status-item">
+          <div class="s-label">Estado</div>
+          <div class="s-value" id="stStatus">—</div>
+        </div>
+        <div class="status-item">
+          <div class="s-label">Duración</div>
+          <div class="s-value" id="stDur">—</div>
+        </div>
+        <div class="status-item">
+          <div class="s-label">Nuevas</div>
+          <div class="s-value" id="stNew">—</div>
+        </div>
+        <div class="status-item">
+          <div class="s-label">Duplicadas</div>
+          <div class="s-value" id="stDup">—</div>
+        </div>
+        <div class="status-item">
+          <div class="s-label">Gate OK</div>
+          <div class="s-value" id="stGate">—</div>
+        </div>
+      </div>
     </div>
+    <div class="card">
+      <div class="card-title">🔑 Palabras Clave</div>
+      <div id="kwList" class="kw-list"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <input type="text" id="newKwInput" placeholder="Nueva keyword…" class="filter-group"
+          style="flex:1;min-width:200px">
+        <button class="btn btn-sm btn-outline" onclick="agregarKeyword()">+ Agregar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ TAB: MENCIONES ══════ -->
+  <div id="tab-menciones" class="tab-content">
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">🎛️ Filtros</div>
+      <div class="filters">
+        <div class="filter-group"><label>Fuente</label><select id="fFuente">
+            <option value="">Todas</option>
+          </select></div>
+        <div class="filter-group"><label>Medio PY</label><select id="fMedio">
+            <option value="">Todos</option>
+          </select></div>
+        <div class="filter-group"><label>Sentimiento</label><select id="fSent">
+            <option value="">Todos</option>
+          </select></div>
+        <div class="filter-group"><label>Tema</label><select id="fTema">
+            <option value="">Todos</option>
+          </select></div>
+        <div class="filter-group"><label>Desde</label><input type="date" id="fDesde"></div>
+        <div class="filter-group"><label>Hasta</label><input type="date" id="fHasta"></div>
+        <div class="filter-group"><label>Buscar</label><input type="text" id="fSearch" placeholder="Texto…"></div>
+        <div class="filter-group" style="gap:8px">
+          <div class="toggle-row"><label class="toggle"><input type="checkbox" id="fGate"><span
+                class="slider"></span></label>Solo Gate OK</div>
+          <div class="toggle-row"><label class="toggle"><input type="checkbox" id="fPY"><span
+                class="slider"></span></label>Solo Medios PY</div>
+        </div>
+        <div class="filter-group" style="gap:4px">
+          <button class="btn btn-primary btn-sm" onclick="applyFilters()">Aplicar</button>
+          <button class="btn btn-ghost btn-sm" onclick="resetFilters()">Limpiar</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-size:13px;color:var(--text-dim)" id="mentionCount"></span>
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">📥 Exportar CSV</button>
+    </div>
+    <div class="mention-list" id="mentionList"></div>
     <div class="pagination" id="pagination"></div>
   </div>
-</div>
 
-<!-- LOADING OVERLAY -->
-<div class="loading" id="loadingOverlay">
-  <div class="spinner"></div>
-  <div class="loading-text" id="loadingText">Procesando…</div>
-</div>
+  <!-- ══════ TAB: ALERTAS ══════ -->
+  <div id="tab-alertas" class="tab-content">
+    <div class="card">
+      <div class="card-title">🔔 Alertas de Sentimiento Negativo</div>
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px">Menciones con score de sentimiento por debajo
+        del umbral configurado que pasaron el gate de contexto Paraguay.</p>
+      <div id="alertList"></div>
+      <div id="noAlerts" style="text-align:center;padding:40px;color:var(--text-muted);display:none">
+        <div style="font-size:40px;margin-bottom:12px">✅</div>
+        <div>No hay alertas pendientes</div>
+      </div>
+    </div>
+  </div>
 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
+  <!-- LOADING -->
+  <div class="loading" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">Procesando…</div>
+  </div>
+  <div class="toast" id="toast"></div>
 
-<script>
-/* ─── STATE ─────────────────────────────────────── */
-var state = {
-  currentTab: 'busqueda',
-  rows: [],
-  stats: {},
-  page: 1,
-  pageSize: 50,
-  charts: {}
-};
+  <script>
+    var S = { tab: 'dashboard', rows: [], stats: {}, page: 1, pageSize: 30, charts: {} };
 
-/* ─── TAB SWITCHING ─────────────────────────────── */
-function switchTab(tab) {
-  state.currentTab = tab;
-  document.querySelectorAll('.tab').forEach(function(t, i) {
-    t.classList.toggle('active', (i === 0 && tab === 'busqueda') || (i === 1 && tab === 'tablero'));
-  });
-  document.querySelectorAll('.tab-content').forEach(function(c) {
-    c.classList.remove('active');
-  });
-  document.getElementById('tab-' + tab).classList.add('active');
-  if (tab === 'busqueda') loadSearchStatus();
-  else loadDashboard();
-}
-
-/* ─── LOADING & TOAST ───────────────────────────── */
-function showLoading(msg) {
-  document.getElementById('loadingText').textContent = msg || 'Procesando…';
-  document.getElementById('loadingOverlay').classList.add('show');
-}
-function hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
-function showToast(msg, dur) {
-  var t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(function() { t.classList.remove('show'); }, dur || 3000);
-}
-
-/* ─── SEARCH TAB ────────────────────────────────── */
-function loadSearchStatus() {
-  google.script.run.withSuccessHandler(function(exec) {
-    if (!exec) return;
-    document.getElementById('stLastRun').textContent = exec.timestamp || '—';
-    document.getElementById('stDuration').textContent = exec.duracion ? exec.duracion + 's' : '—';
-    document.getElementById('stNew').textContent = exec.nuevas != null ? exec.nuevas : '—';
-    document.getElementById('stDup').textContent = exec.duplicadas != null ? exec.duplicadas : '—';
-    document.getElementById('stGateOK').textContent = exec.gateOK != null ? exec.gateOK : '—';
-    document.getElementById('stErrors').textContent = exec.errores != null ? exec.errores : '0';
-  }).getLastExecution();
-  loadKeywords();
-}
-
-function loadKeywords() {
-  google.script.run.withSuccessHandler(function(kws) {
-    var container = document.getElementById('kwList');
-    container.innerHTML = '';
-    (kws || []).forEach(function(kw) {
-      var cls = String(kw.activa).toUpperCase() === 'SI' ? 'active' : 'inactive';
-      var dotCls = String(kw.activa).toUpperCase() === 'SI' ? 'on' : 'off';
-      var chip = document.createElement('div');
-      chip.className = 'kw-chip ' + cls;
-      chip.innerHTML = '<span class="kw-toggle ' + dotCls + '" onclick="toggleKw(\'' +
-        kw.keyword.replace(/'/g, "\\'") + '\',' + (cls === 'active' ? 'false' : 'true') + ')"></span>' + kw.keyword;
-      container.appendChild(chip);
-    });
-  }).getKeywords();
-}
-
-function toggleKw(keyword, activa) {
-  google.script.run.withSuccessHandler(function() {
-    loadKeywords(); showToast('Keyword actualizada');
-  }).toggleKeyword(keyword, activa);
-}
-
-function agregarKeyword() {
-  var inp = document.getElementById('newKwInput');
-  var val = inp.value.trim();
-  if (!val) return;
-  google.script.run.withSuccessHandler(function() {
-    inp.value = ''; loadKeywords(); showToast('Keyword agregada');
-  }).addKeyword(val);
-}
-
-function ejecutarBusqueda() {
-  var btn = document.getElementById('btnSearch');
-  btn.disabled = true;
-  showLoading('Ejecutando búsqueda… esto puede tomar 1-3 minutos');
-  google.script.run.withSuccessHandler(function(res) {
-    hideLoading(); btn.disabled = false;
-    if (res && res.status === 'ok') {
-      showToast('✅ ' + res.nuevas + ' nuevas menciones encontradas (' + res.duplicadas + ' duplicadas)');
-    } else {
-      showToast('⚠️ ' + (res ? res.message || 'Sin resultados' : 'Error'), 5000);
+    function switchTab(t) {
+      S.tab = t; S.page = 1;
+      document.querySelectorAll('.tab').forEach(function (el, i) {
+        el.classList.toggle('active', ['dashboard', 'busqueda', 'menciones', 'alertas'][i] === t);
+      });
+      document.querySelectorAll('.tab-content').forEach(function (c) { c.classList.remove('active'); });
+      document.getElementById('tab-' + t).classList.add('active');
+      if (t === 'dashboard') loadDashboard();
+      else if (t === 'busqueda') loadSearchStatus();
+      else if (t === 'menciones') loadMentions();
+      else if (t === 'alertas') loadAlerts();
     }
-    loadSearchStatus();
-  }).withFailureHandler(function(e) {
-    hideLoading(); btn.disabled = false;
-    showToast('❌ Error: ' + e.message, 5000);
-  }).runManualSearch();
-}
 
-/* ─── DASHBOARD TAB ─────────────────────────────── */
-function getFilters() {
-  return {
-    fuente: document.getElementById('fFuente').value,
-    medioPY: document.getElementById('fMedioPY').value,
-    sentimiento: document.getElementById('fSentimiento').value,
-    tema: document.getElementById('fTema').value,
-    fechaDesde: document.getElementById('fDesde').value,
-    fechaHasta: document.getElementById('fHasta').value,
-    busqueda: document.getElementById('fBusqueda').value,
-    gateOnly: document.getElementById('fGateOnly').checked,
-    soloMediosPY: document.getElementById('fSoloPY').checked
-  };
-}
+    function showLoading(m) { document.getElementById('loadingText').textContent = m || 'Procesando…'; document.getElementById('loadingOverlay').classList.add('show'); }
+    function hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
+    function showToast(m, d) { var t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(function () { t.classList.remove('show') }, d || 3000); }
+    function escHtml(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+    function refreshAll() { if (S.tab === 'dashboard') loadDashboard(); else if (S.tab === 'busqueda') loadSearchStatus(); else if (S.tab === 'menciones') loadMentions(); else loadAlerts(); }
 
-function applyFilters() { state.page = 1; loadDashboard(); }
-function resetFilters() {
-  ['fFuente','fMedioPY','fSentimiento','fTema'].forEach(function(id) { document.getElementById(id).value = ''; });
-  document.getElementById('fDesde').value = '';
-  document.getElementById('fHasta').value = '';
-  document.getElementById('fBusqueda').value = '';
-  document.getElementById('fGateOnly').checked = false;
-  document.getElementById('fSoloPY').checked = false;
-  applyFilters();
-}
-
-function loadDashboard() {
-  showLoading('Cargando tablero…');
-  var filters = getFilters();
-  google.script.run.withSuccessHandler(function(stats) {
-    state.stats = stats || {};
-    updateKPIs(stats);
-    updateCharts(stats);
-    google.script.run.withSuccessHandler(function(data) {
-      hideLoading();
-      state.rows = data.rows || [];
-      renderTable();
-      document.getElementById('tableCount').textContent = '(' + state.rows.length + ' resultados)';
-    }).getFilteredData(filters);
-  }).withFailureHandler(function(e) {
-    hideLoading(); showToast('Error cargando datos: ' + e.message, 5000);
-  }).getDashboardStats(filters);
-  // Load filter options
-  google.script.run.withSuccessHandler(populateFilterOptions).getFilterOptions();
-}
-
-function populateFilterOptions(opts) {
-  if (!opts) return;
-  fillSelect('fFuente', opts.fuentes, 'Todas');
-  fillSelect('fMedioPY', opts.mediosPY, 'Todos');
-  fillSelect('fSentimiento', opts.sentimientos, 'Todos');
-  fillSelect('fTema', opts.temas, 'Todos');
-}
-
-function fillSelect(id, items, allLabel) {
-  var sel = document.getElementById(id);
-  var current = sel.value;
-  sel.innerHTML = '<option value="">' + allLabel + '</option>';
-  (items || []).forEach(function(item) {
-    var opt = document.createElement('option');
-    opt.value = item; opt.textContent = item;
-    sel.appendChild(opt);
-  });
-  sel.value = current;
-}
-
-/* ─── KPIs ──────────────────────────────────────── */
-function updateKPIs(s) {
-  document.getElementById('kpiTotal').textContent = s.total || 0;
-  document.getElementById('kpiHoy').textContent = s.hoy || 0;
-  var pctPos = s.total > 0 ? Math.round(s.positivas / s.total * 100) : 0;
-  document.getElementById('kpiPos').textContent = pctPos + '%';
-  document.getElementById('kpiPosDetail').textContent = s.positivas + ' pos · ' + s.neutrales + ' neu · ' + s.negativas + ' neg';
-  document.getElementById('kpiTopPY').textContent = s.topMedioPY || '—';
-}
-
-/* ─── CHARTS ────────────────────────────────────── */
-function destroyChart(key) { if (state.charts[key]) { state.charts[key].destroy(); state.charts[key] = null; } }
-
-function updateCharts(s) {
-  // Trend
-  destroyChart('trend');
-  var trendLabels = Object.keys(s.tendenciaDiaria || {}).sort();
-  var trendData = trendLabels.map(function(k) { return s.tendenciaDiaria[k]; });
-  state.charts.trend = new Chart(document.getElementById('chartTrend'), {
-    type: 'line',
-    data: { labels: trendLabels, datasets: [{ label: 'Menciones', data: trendData, borderColor: '#6c63ff', backgroundColor: 'rgba(108,99,255,0.1)', tension: 0.4, fill: true, pointRadius: 3 }] },
-    options: chartOpts('Tendencia Diaria')
-  });
-
-  // Sentiment
-  destroyChart('sent');
-  state.charts.sent = new Chart(document.getElementById('chartSent'), {
-    type: 'doughnut',
-    data: { labels: ['Positivo','Neutral','Negativo'], datasets: [{ data: [s.positivas||0, s.neutrales||0, s.negativas||0], backgroundColor: ['#00e676','#ffd740','#ff5252'], borderWidth: 0 }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#9e9faf', font: { size: 11 } } } } }
-  });
-
-  // Sources
-  destroyChart('src');
-  var srcLabels = Object.keys(s.porFuente || {});
-  var srcData = srcLabels.map(function(k) { return s.porFuente[k]; });
-  state.charts.src = new Chart(document.getElementById('chartSrc'), {
-    type: 'bar',
-    data: { labels: srcLabels, datasets: [{ label: 'Menciones', data: srcData, backgroundColor: 'rgba(0,229,255,0.6)', borderRadius: 6 }] },
-    options: chartOpts('Fuentes')
-  });
-
-  // Media PY
-  destroyChart('media');
-  var mediaLabels = Object.keys(s.porMedioPY || {}).sort(function(a, b) { return s.porMedioPY[b] - s.porMedioPY[a]; }).slice(0, 10);
-  var mediaData = mediaLabels.map(function(k) { return s.porMedioPY[k]; });
-  state.charts.media = new Chart(document.getElementById('chartMedia'), {
-    type: 'bar',
-    data: { labels: mediaLabels, datasets: [{ label: 'Menciones', data: mediaData, backgroundColor: 'rgba(108,99,255,0.6)', borderRadius: 6 }] },
-    options: Object.assign({}, chartOpts('Medios PY'), { indexAxis: 'y' })
-  });
-
-  // Topics
-  destroyChart('topics');
-  var topicLabels = Object.keys(s.porTema || {});
-  var topicData = topicLabels.map(function(k) { return s.porTema[k]; });
-  var topicColors = ['rgba(0,230,118,0.6)','rgba(255,82,82,0.6)','rgba(108,99,255,0.6)','rgba(255,215,64,0.6)','rgba(0,229,255,0.6)'];
-  state.charts.topics = new Chart(document.getElementById('chartTopics'), {
-    type: 'bar',
-    data: { labels: topicLabels, datasets: [{ label: 'Menciones', data: topicData, backgroundColor: topicColors, borderRadius: 6 }] },
-    options: chartOpts('Temas')
-  });
-}
-
-function chartOpts(title) {
-  return {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, title: { display: false } },
-    scales: {
-      x: { ticks: { color: '#6b6c7e', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
-      y: { ticks: { color: '#6b6c7e', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' }, beginAtZero: true }
+    function animateValue(el, end, dur, suffix) {
+      var start = 0, startTime = null; suffix = suffix || '';
+      function step(ts) {
+        if (!startTime) startTime = ts;
+        var p = Math.min((ts - startTime) / (dur || 800), 1);
+        var ease = 1 - Math.pow(1 - p, 3);
+        var val = Math.round(end * ease);
+        el.textContent = val + suffix;
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
     }
-  };
-}
 
-/* ─── TABLE ─────────────────────────────────────── */
-function renderTable() {
-  var tbody = document.getElementById('tableBody');
-  var start = (state.page - 1) * state.pageSize;
-  var end = Math.min(start + state.pageSize, state.rows.length);
-  var html = '';
-  for (var i = start; i < end; i++) {
-    var r = state.rows[i];
-    var sentClass = r.sentimiento === 'Positivo' ? 'badge-pos' : r.sentimiento === 'Negativo' ? 'badge-neg' : 'badge-neu';
-    var gateClass = r.gateOK === 'SI' ? 'badge-pos' : 'badge-neg';
-    html += '<tr>' +
-      '<td>' + String(r.fechaPub).substring(0, 10) + '</td>' +
-      '<td>' + r.fuente + '</td>' +
-      '<td><a href="' + r.link + '" target="_blank" title="' + escHtml(r.snippet) + '">' + escHtml(r.titulo.substring(0, 80)) + '</a></td>' +
-      '<td>' + r.dominio + '</td>' +
-      '<td>' + (r.medioPY || '—') + '</td>' +
-      '<td><span class="badge ' + gateClass + '">' + r.gateOK + '</span></td>' +
-      '<td><span class="badge ' + sentClass + '">' + r.sentimiento + ' (' + r.sentimientoScore + ')</span></td>' +
-      '<td>' + (r.tema || '—') + '</td>' +
-      '</tr>';
-  }
-  tbody.innerHTML = html;
-  renderPagination();
-}
+    /* ═══ DASHBOARD ═══ */
+    function loadDashboard() {
+      showLoading('Cargando dashboard…');
+      google.script.run.withSuccessHandler(function (s) {
+        S.stats = s || {};
+        updateKPIs(s);
+        updateCharts(s);
+        hideLoading();
+      }).withFailureHandler(function (e) { hideLoading(); showToast('Error: ' + e.message, 5000); }).getDashboardStats({});
+    }
 
-function renderPagination() {
-  var totalPages = Math.max(1, Math.ceil(state.rows.length / state.pageSize));
-  var container = document.getElementById('pagination');
-  if (totalPages <= 1) { container.innerHTML = ''; return; }
-  var html = '<button onclick="goPage(1)">&laquo;</button>';
-  html += '<button onclick="goPage(' + Math.max(1, state.page - 1) + ')">&lsaquo;</button>';
-  var startP = Math.max(1, state.page - 2);
-  var endP = Math.min(totalPages, state.page + 2);
-  for (var p = startP; p <= endP; p++) {
-    html += '<button class="' + (p === state.page ? 'active' : '') + '" onclick="goPage(' + p + ')">' + p + '</button>';
-  }
-  html += '<button onclick="goPage(' + Math.min(totalPages, state.page + 1) + ')">&rsaquo;</button>';
-  html += '<button onclick="goPage(' + totalPages + ')">&raquo;</button>';
-  html += '<span>Pág ' + state.page + '/' + totalPages + '</span>';
-  container.innerHTML = html;
-}
+    function updateKPIs(s) {
+      animateValue(document.getElementById('kpiTotal'), s.total || 0, 800);
+      document.getElementById('kpiTotalSub').innerHTML = (s.positivas || 0) + ' pos · ' + (s.neutrales || 0) + ' neu · ' + (s.negativas || 0) + ' neg';
+      animateValue(document.getElementById('kpiHoy'), s.hoy || 0, 600);
+      document.getElementById('kpiHoySub').innerHTML = 'Ayer: ' + (s.ayer || 0) + (s.hoy > (s.ayer || 0) ? ' <span class="trend-up">↑</span>' : s.hoy < (s.ayer || 0) ? ' <span class="trend-down">↓</span>' : '');
+      var avgS = s.avgSentiment || 0;
+      document.getElementById('kpiSent').textContent = (avgS >= 0 ? '+' : '') + avgS.toFixed(2);
+      document.getElementById('kpiSentSub').textContent = avgS > 0 ? 'Tendencia positiva' : avgS < 0 ? 'Tendencia negativa' : 'Neutral';
+      var conf = Math.round((s.avgConfidence || 0) * 100);
+      animateValue(document.getElementById('kpiConf'), conf, 600, '%');
+      document.getElementById('kpiConfSub').textContent = 'Relevancia: ' + Math.round((s.avgRelevance || 0) * 100) + '%';
+      var gateTotal = (s.gate?.passed || 0) + (s.gate?.rejected || 0);
+      var gateRate = gateTotal > 0 ? Math.round(s.gate.passed / gateTotal * 100) : 0;
+      animateValue(document.getElementById('kpiGate'), gateRate, 600, '%');
+      document.getElementById('kpiGateSub').textContent = (s.gate?.passed || 0) + ' ok / ' + (s.gate?.rejected || 0) + ' rechazadas';
+      document.getElementById('kpiTopPY').textContent = s.topMedioPY || '—';
+      var pyTotal = s.mediaOrigin?.paraguay || 0;
+      document.getElementById('kpiTopPYSub').textContent = pyTotal + ' menciones de medios PY';
+    }
 
-function goPage(p) { state.page = p; renderTable(); }
+    function destroyChart(k) { if (S.charts[k]) { S.charts[k].destroy(); S.charts[k] = null; } }
+    function chartOpts() {
+      return {
+        responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+        scales: { x: { ticks: { color: '#6b7280', font: { size: 10 } }, grid: { color: 'rgba(75,85,99,0.15)' } }, y: { ticks: { color: '#6b7280', font: { size: 10 } }, grid: { color: 'rgba(75,85,99,0.15)' }, beginAtZero: true } }
+      };
+    }
+    var ttStyle = { backgroundColor: 'rgba(17,24,39,0.95)', borderColor: 'rgba(75,85,99,0.5)', borderRadius: 12, titleColor: '#9ca3af', bodyColor: '#e5e7eb' };
 
-function escHtml(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+    function updateCharts(s) {
+      // Trend
+      destroyChart('trend');
+      var l7 = s.last7Days || [];
+      var labels7 = l7.map(function (d) { return d.date.substring(5) });
+      S.charts.trend = new Chart(document.getElementById('chartTrend'), {
+        type: 'bar',
+        data: {
+          labels: labels7, datasets: [
+            { label: 'Positivos', data: l7.map(function (d) { return d.sentiment.pos }), backgroundColor: 'rgba(16,185,129,0.7)', borderRadius: 4, stack: 's' },
+            { label: 'Neutrales', data: l7.map(function (d) { return d.sentiment.neu }), backgroundColor: 'rgba(107,114,128,0.5)', borderRadius: 4, stack: 's' },
+            { label: 'Negativos', data: l7.map(function (d) { return d.sentiment.neg }), backgroundColor: 'rgba(239,68,68,0.7)', borderRadius: 4, stack: 's' }
+          ]
+        },
+        options: Object.assign({}, chartOpts(), { plugins: { legend: { display: true, labels: { color: '#9ca3af', font: { size: 10 } } }, tooltip: ttStyle }, scales: { x: { stacked: true, ticks: { color: '#6b7280', font: { size: 10 } }, grid: { display: false } }, y: { stacked: true, ticks: { color: '#6b7280', font: { size: 10 } }, grid: { color: 'rgba(75,85,99,0.15)' }, beginAtZero: true } } })
+      });
 
-/* ─── INIT ──────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', function() { loadSearchStatus(); });
-</script>
+      // Sentiment donut
+      destroyChart('sent');
+      S.charts.sent = new Chart(document.getElementById('chartSent'), {
+        type: 'doughnut',
+        data: { labels: ['Positivo', 'Neutral', 'Negativo'], datasets: [{ data: [s.positivas || 0, s.neutrales || 0, s.negativas || 0], backgroundColor: ['#10b981', '#6b7280', '#ef4444'], borderWidth: 0, borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { color: '#9ca3af', font: { size: 11 }, padding: 16 } }, tooltip: ttStyle } }
+      });
+
+      // Sources
+      destroyChart('src');
+      var srcK = Object.keys(s.porFuente || {}).sort(function (a, b) { return (s.porFuente[b] || 0) - (s.porFuente[a] || 0) });
+      var srcColors = { GoogleNews: '#4285f4', BingNews: '#00a4ef', Reddit: '#ff4500', Manual: '#8b5cf6' };
+      S.charts.src = new Chart(document.getElementById('chartSrc'), {
+        type: 'bar',
+        data: { labels: srcK, datasets: [{ data: srcK.map(function (k) { return s.porFuente[k] }), backgroundColor: srcK.map(function (k) { return srcColors[k] || '#3b82f6' }), borderRadius: 6 }] },
+        options: Object.assign({}, chartOpts(), { indexAxis: 'y' })
+      });
+
+      // Media PY
+      destroyChart('media');
+      var mk = Object.keys(s.porMedioPY || {}).sort(function (a, b) { return (s.porMedioPY[b] || 0) - (s.porMedioPY[a] || 0) }).slice(0, 8);
+      S.charts.media = new Chart(document.getElementById('chartMedia'), {
+        type: 'bar',
+        data: { labels: mk, datasets: [{ data: mk.map(function (k) { return s.porMedioPY[k] }), backgroundColor: 'rgba(59,130,246,0.6)', borderRadius: 6 }] },
+        options: Object.assign({}, chartOpts(), { indexAxis: 'y' })
+      });
+
+      // Topics
+      destroyChart('topics');
+      var tk = Object.keys(s.porTema || {});
+      var tColors = { Ambiental: '#10b981', Laboral: '#3b82f6', Comunidad: '#8b5cf6', 'Inversión': '#f59e0b', 'Operación': '#ef4444' };
+      S.charts.topics = new Chart(document.getElementById('chartTopics'), {
+        type: 'bar',
+        data: { labels: tk, datasets: [{ data: tk.map(function (k) { return s.porTema[k] }), backgroundColor: tk.map(function (k) { return tColors[k] || '#6b7280' }), borderRadius: 6 }] },
+        options: chartOpts()
+      });
+
+      // Radar
+      destroyChart('radar');
+      var gateT = (s.gate?.passed || 0) + (s.gate?.rejected || 0);
+      var mediaT = (s.mediaOrigin?.paraguay || 0) + (s.mediaOrigin?.international || 0);
+      S.charts.radar = new Chart(document.getElementById('chartRadar'), {
+        type: 'radar',
+        data: {
+          labels: ['Cobertura', 'Relevancia', 'Confianza', 'Sentimiento', 'Gate Pass', 'Medios PY'],
+          datasets: [{
+            data: [Math.min(100, s.total || 0), Math.round((s.avgRelevance || 0) * 100), Math.round((s.avgConfidence || 0) * 100), Math.round(((s.avgSentiment || 0) + 1) * 50), gateT > 0 ? Math.round(s.gate.passed / gateT * 100) : 0, mediaT > 0 ? Math.round(s.mediaOrigin.paraguay / mediaT * 100) : 0],
+            backgroundColor: 'rgba(59,130,246,0.2)', borderColor: '#3b82f6', borderWidth: 2, pointBackgroundColor: '#3b82f6', pointRadius: 4
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { r: { angleLines: { color: 'rgba(75,85,99,0.2)' }, grid: { color: 'rgba(75,85,99,0.2)' }, pointLabels: { color: '#9ca3af', font: { size: 11 } }, ticks: { display: false }, suggestedMin: 0, suggestedMax: 100 } }, plugins: { legend: { display: false } } }
+      });
+
+      // Origin donut
+      destroyChart('origin');
+      S.charts.origin = new Chart(document.getElementById('chartOrigin'), {
+        type: 'doughnut',
+        data: { labels: ['Paraguay 🇵🇾', 'Internacional 🌍'], datasets: [{ data: [s.mediaOrigin?.paraguay || 0, s.mediaOrigin?.international || 0], backgroundColor: ['#3b82f6', '#6b7280'], borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'bottom', labels: { color: '#9ca3af', font: { size: 11 } } } } }
+      });
+    }
+
+    /* ═══ BÚSQUEDA ═══ */
+    function loadSearchStatus() {
+      google.script.run.withSuccessHandler(function (ex) {
+        if (!ex) return;
+        document.getElementById('stLast').textContent = ex.timestamp || '—';
+        document.getElementById('stStatus').textContent = ex.estado || '—';
+        document.getElementById('stDur').textContent = ex.duracion ? ex.duracion + 's' : '—';
+        document.getElementById('stNew').textContent = ex.nuevas != null ? ex.nuevas : '—';
+        document.getElementById('stDup').textContent = ex.duplicadas != null ? ex.duplicadas : '—';
+        document.getElementById('stGate').textContent = ex.gateOK != null ? ex.gateOK : '—';
+      }).getLastExecution();
+      loadKeywords();
+    }
+    function loadKeywords() {
+      google.script.run.withSuccessHandler(function (kws) {
+        var c = document.getElementById('kwList'); c.innerHTML = '';
+        (kws || []).forEach(function (kw) {
+          var cls = String(kw.activa).toUpperCase() === 'SI' ? 'on' : 'off';
+          var chip = document.createElement('div');
+          chip.className = 'kw-chip ' + cls;
+          chip.innerHTML = '<span class="kw-dot ' + cls + '" onclick="toggleKw(\'' + escHtml(kw.keyword).replace(/'/g, "\\'") + '\',' + (cls === 'on' ? 'false' : 'true') + ')"></span>' +
+            escHtml(kw.keyword) + ' <span class="kw-count">(' + kw.useCount + ')</span>' +
+            '<span class="kw-del" onclick="deleteKw(\'' + escHtml(kw.keyword).replace(/'/g, "\\'") + '\')">×</span>';
+          c.appendChild(chip);
+        });
+      }).getKeywords();
+    }
+    function toggleKw(kw, act) { google.script.run.withSuccessHandler(function () { loadKeywords(); showToast('Keyword actualizada') }).toggleKeyword(kw, act); }
+    function deleteKw(kw) { if (!confirm('¿Eliminar "' + kw + '"?')) return; google.script.run.withSuccessHandler(function () { loadKeywords(); showToast('Keyword eliminada') }).deleteKeyword(kw); }
+    function agregarKeyword() { var v = document.getElementById('newKwInput').value.trim(); if (!v) return; google.script.run.withSuccessHandler(function () { document.getElementById('newKwInput').value = ''; loadKeywords(); showToast('Keyword agregada') }).addKeyword(v); }
+
+    function ejecutarBusqueda() {
+      var btn = document.getElementById('btnSearch'); btn.disabled = true;
+      var prog = document.getElementById('searchProgress'); prog.textContent = 'Iniciando búsqueda…';
+      var bar = document.getElementById('searchProgressBar'); bar.style.display = 'block';
+      var fill = document.getElementById('progressFill'); fill.style.width = '10%';
+      var pTimer = setInterval(function () { var w = parseInt(fill.style.width) || 10; if (w < 90) fill.style.width = (w + 5) + '%'; }, 2000);
+      google.script.run.withSuccessHandler(function (res) {
+        clearInterval(pTimer); fill.style.width = '100%'; btn.disabled = false;
+        if (res && res.status === 'ok') prog.textContent = '✓ ' + res.nuevas + ' nuevas (' + res.duplicadas + ' dup, ' + res.alerts + ' alertas)';
+        else prog.textContent = '⚠️ ' + (res ? res.message : 'Sin resultados');
+        setTimeout(function () { bar.style.display = 'none'; fill.style.width = '0%'; prog.textContent = '' }, 4000);
+        loadSearchStatus();
+      }).withFailureHandler(function (e) { clearInterval(pTimer); btn.disabled = false; prog.textContent = '❌ Error: ' + e.message; bar.style.display = 'none'; }).runManualSearch();
+    }
+
+    /* ═══ MENCIONES ═══ */
+    function getFilters() {
+      return {
+        fuente: document.getElementById('fFuente').value, medioPY: document.getElementById('fMedio').value,
+        sentimiento: document.getElementById('fSent').value, tema: document.getElementById('fTema').value,
+        fechaDesde: document.getElementById('fDesde').value, fechaHasta: document.getElementById('fHasta').value,
+        busqueda: document.getElementById('fSearch').value, gateOnly: document.getElementById('fGate').checked,
+        soloMediosPY: document.getElementById('fPY').checked
+      };
+    }
+    function applyFilters() { S.page = 1; loadMentions(); }
+    function resetFilters() { ['fFuente', 'fMedio', 'fSent', 'fTema'].forEach(function (id) { document.getElementById(id).value = '' }); document.getElementById('fDesde').value = ''; document.getElementById('fHasta').value = ''; document.getElementById('fSearch').value = ''; document.getElementById('fGate').checked = false; document.getElementById('fPY').checked = false; applyFilters(); }
+
+    function loadMentions() {
+      showLoading('Cargando menciones…');
+      google.script.run.withSuccessHandler(function (data) {
+        hideLoading(); S.rows = data.rows || [];
+        document.getElementById('mentionCount').textContent = S.rows.length + ' menciones encontradas';
+        renderMentions();
+      }).withFailureHandler(function (e) { hideLoading(); showToast('Error: ' + e.message, 5000) }).getFilteredData(getFilters());
+      google.script.run.withSuccessHandler(populateFilters).getFilterOptions();
+    }
+
+    function populateFilters(opts) {
+      if (!opts) return;
+      fillSel('fFuente', opts.fuentes, 'Todas'); fillSel('fMedio', opts.mediosPY, 'Todos');
+      fillSel('fSent', opts.sentimientos, 'Todos'); fillSel('fTema', opts.temas, 'Todos');
+    }
+    function fillSel(id, items, all) { var s = document.getElementById(id), v = s.value; s.innerHTML = '<option value="">' + all + '</option>'; (items || []).forEach(function (i) { var o = document.createElement('option'); o.value = i; o.textContent = i; s.appendChild(o) }); s.value = v; }
+
+    function renderMentions() {
+      var list = document.getElementById('mentionList');
+      var start = (S.page - 1) * S.pageSize, end = Math.min(start + S.pageSize, S.rows.length);
+      var html = '';
+      for (var i = start; i < end; i++) {
+        var r = S.rows[i];
+        var sentCls = r.sentimiento === 'Positivo' ? 'badge-pos' : r.sentimiento === 'Negativo' ? 'badge-neg' : 'badge-neu';
+        var gateCls = r.gateOK === 'SI' ? 'badge-gate-ok' : 'badge-gate-no';
+        var gateIcon = r.gateOK === 'SI' ? '✓' : '✗';
+        html += '<div class="mention-card">' +
+          '<div class="mention-header">' +
+          '<span class="' + gateCls + '" title="Gate: ' + escHtml(r.gateReason) + '">' + gateIcon + '</span>' +
+          '<span class="badge badge-source">' + r.fuente + '</span>' +
+          (r.medioPY ? '<span class="badge badge-py">🇵🇾 ' + escHtml(r.medioPY) + '</span>' : '') +
+          (r.relevance ? '<span style="font-size:10px;color:var(--text-muted)">rel:' + r.relevance + '</span>' : '') +
+          '</div>' +
+          '<div class="mention-title"><a href="' + r.link + '" target="_blank">' + escHtml(r.titulo) + '</a></div>' +
+          (r.snippet ? '<div class="mention-snippet">' + escHtml(r.snippet) + '</div>' : '') +
+          '<div class="mention-footer">' +
+          '<span class="badge ' + sentCls + '">' + r.sentimiento + ' (' + r.sentimientoScore + ')' + (r.confidence ? ' · conf:' + Math.round(r.confidence * 100) + '%' : '') + '</span>' +
+          (r.tema ? r.tema.split(', ').map(function (t) { return '<span class="badge badge-topic">' + t + '</span>' }).join('') : '') +
+          '<span class="mention-meta">🕒 ' + String(r.fechaPub).substring(0, 10) + (r.dominio ? ' · ' + r.dominio : '') + '</span>' +
+          '</div>' +
+          '</div>';
+      }
+      list.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--text-muted)">No hay menciones</div>';
+      renderPagination();
+    }
+
+    function renderPagination() {
+      var totalP = Math.max(1, Math.ceil(S.rows.length / S.pageSize));
+      var c = document.getElementById('pagination');
+      if (totalP <= 1) { c.innerHTML = ''; return }
+      var h = '<button onclick="goPage(1)">«</button><button onclick="goPage(' + Math.max(1, S.page - 1) + ')">‹</button>';
+      var sP = Math.max(1, S.page - 2), eP = Math.min(totalP, S.page + 2);
+      for (var p = sP; p <= eP; p++) h += '<button class="' + (p === S.page ? 'active' : '') + '" onclick="goPage(' + p + ')">' + p + '</button>';
+      h += '<button onclick="goPage(' + Math.min(totalP, S.page + 1) + ')">›</button><button onclick="goPage(' + totalP + ')">»</button>';
+      h += '<span>' + S.page + '/' + totalP + '</span>';
+      c.innerHTML = h;
+    }
+    function goPage(p) { S.page = p; renderMentions(); document.getElementById('tab-menciones').scrollTo(0, 0) }
+
+    /* ═══ ALERTAS ═══ */
+    function loadAlerts() {
+      google.script.run.withSuccessHandler(function (data) {
+        var rows = data.rows || [];
+        var alertRows = rows.filter(function (r) { return r.sentimientoScore <= -0.3 && r.gateOK === 'SI' });
+        var list = document.getElementById('alertList');
+        var noA = document.getElementById('noAlerts');
+        if (alertRows.length === 0) { list.innerHTML = ''; noA.style.display = 'block'; return; }
+        noA.style.display = 'none';
+        var html = '';
+        alertRows.slice(0, 30).forEach(function (r) {
+          var sev = r.sentimientoScore <= -0.7 ? 'critical' : r.sentimientoScore <= -0.5 ? 'high' : 'medium';
+          html += '<div class="alert-card alert-' + sev + '">' +
+            '<div class="alert-msg">' + (sev === 'critical' ? '🔴' : sev === 'high' ? '🟠' : '🟡') + ' ' + escHtml(r.titulo.substring(0, 100)) + '</div>' +
+            '<div style="margin-top:6px"><span class="badge badge-neg">Score: ' + r.sentimientoScore + '</span> <span class="badge badge-source">' + r.fuente + '</span>' + (r.medioPY ? ' <span class="badge badge-py">' + r.medioPY + '</span>' : '') + '</div>' +
+            '<div class="alert-time">' + String(r.fechaPub).substring(0, 10) + ' · <a href="' + r.link + '" target="_blank" style="color:var(--blue);text-decoration:none">Ver noticia →</a></div>' +
+            '</div>';
+        });
+        list.innerHTML = html;
+        var badge = document.getElementById('alertBadge');
+        badge.textContent = alertRows.length;
+        badge.style.display = alertRows.length > 0 ? 'inline' : 'none';
+      }).getFilteredData({ gateOnly: true });
+    }
+
+    /* ═══ EXPORT ═══ */
+    function exportCSV() {
+      showLoading('Generando CSV…');
+      google.script.run.withSuccessHandler(function (csv) {
+        hideLoading();
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a'); a.href = url; a.download = 'paracel-menciones-' + (new Date().toISOString().split('T')[0]) + '.csv'; a.click();
+        showToast('CSV descargado');
+      }).withFailureHandler(function (e) { hideLoading(); showToast('Error: ' + e.message, 5000) }).exportToCSV(getFilters());
+    }
+
+    /* ═══ INIT ═══ */
+    document.addEventListener('DOMContentLoaded', function () { loadDashboard() });
+  </script>
 </body>
+
 </html>

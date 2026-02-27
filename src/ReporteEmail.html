@@ -9,9 +9,9 @@
     <table width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;margin:0 auto;background:#ffffff">
         <!-- Header -->
         <tr>
-            <td style="background:linear-gradient(135deg,#1a237e,#6c63ff);padding:28px 32px;text-align:center">
-                <h1 style="color:#ffffff;font-size:22px;margin:0">📊 Monitor PARACEL</h1>
-                <p style="color:rgba(255,255,255,0.8);font-size:13px;margin:6px 0 0">Reporte diario de menciones —
+            <td style="background:linear-gradient(135deg,#030712,#1e293b);padding:28px 32px;text-align:center">
+                <h1 style="color:#ffffff;font-size:22px;margin:0">📊 Monitor PARACEL v2.0</h1>
+                <p style="color:rgba(255,255,255,0.6);font-size:13px;margin:6px 0 0">Reporte diario de menciones —
                     <?= fecha.substring(0,10) ?>
                 </p>
             </td>
@@ -22,38 +22,54 @@
                 <table width="100%" cellpadding="0" cellspacing="0">
                     <tr>
                         <td width="25%" style="text-align:center;padding:12px">
-                            <div style="font-size:28px;font-weight:800;color:#6c63ff">
+                            <div style="font-size:28px;font-weight:800;color:#3b82f6">
                                 <?= stats.nuevas ?>
                             </div>
-                            <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px">Nuevas
+                            <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px">Nuevas
                             </div>
                         </td>
                         <td width="25%" style="text-align:center;padding:12px">
-                            <div style="font-size:28px;font-weight:800;color:#00c853">
+                            <div style="font-size:28px;font-weight:800;color:#10b981">
                                 <?= stats.gateOK ?>
                             </div>
-                            <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px">Gate OK
+                            <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px">Gate OK
                             </div>
                         </td>
                         <td width="25%" style="text-align:center;padding:12px">
-                            <div style="font-size:28px;font-weight:800;color:#ff9100">
+                            <div style="font-size:28px;font-weight:800;color:#f59e0b">
                                 <?= stats.duplicadas ?>
                             </div>
-                            <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px">
+                            <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px">
                                 Duplicadas</div>
                         </td>
                         <td width="25%" style="text-align:center;padding:12px">
-                            <div style="font-size:28px;font-weight:800;color:#ff5252">
+                            <div style="font-size:28px;font-weight:800;color:#ef4444">
                                 <?= stats.errores.length ?>
                             </div>
-                            <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px">Errores
+                            <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px">Errores
                             </div>
                         </td>
                     </tr>
                 </table>
             </td>
         </tr>
-        <!-- Divider -->
+        <!-- Alerts -->
+        <? if (alerts && alerts.length > 0) { ?>
+        <tr>
+            <td style="padding:8px 32px">
+                <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:14px">
+                    <div style="font-size:14px;font-weight:600;color:#991b1b;margin-bottom:8px">🔔 Alertas (
+                        <?= alerts.length ?>)
+                    </div>
+                    <? for (var a = 0; a < Math.min(alerts.length, 5); a++) { ?>
+                    <div style="font-size:12px;color:#7f1d1d;padding:4px 0;border-bottom:1px solid #fee2e2">
+                        <?= alerts[a] ?>
+                    </div>
+                    <? } ?>
+                </div>
+            </td>
+        </tr>
+        <? } ?>
         <tr>
             <td style="padding:0 32px">
                 <hr style="border:none;border-top:1px solid #eee">
@@ -66,7 +82,7 @@
                 <table width="100%" cellpadding="8" cellspacing="0" style="font-size:12px;border-collapse:collapse">
                     <tr style="background:#f0f0f5">
                         <th style="text-align:left;color:#555;border-bottom:2px solid #ddd;padding:8px">Título</th>
-                        <th style="text-align:left;color:#555;border-bottom:2px solid #ddd;padding:8px;width:80px">
+                        <th style="text-align:left;color:#555;border-bottom:2px solid #ddd;padding:8px;width:70px">
                             Fuente</th>
                         <th style="text-align:left;color:#555;border-bottom:2px solid #ddd;padding:8px;width:80px">
                             Sentimiento</th>
@@ -74,7 +90,7 @@
                     <? for (var i = 0; i < rows.length; i++) { ?>
                     <tr style="border-bottom:1px solid #f0f0f0">
                         <td style="padding:8px">
-                            <a href="<?= rows[i][7] ?>" style="color:#6c63ff;text-decoration:none">
+                            <a href="<?= rows[i][7] ?>" style="color:#3b82f6;text-decoration:none">
                                 <?= rows[i][6].substring(0,70) ?>
                             </a>
                             <div style="font-size:10px;color:#999;margin-top:2px">
@@ -87,8 +103,9 @@
                         <td style="padding:8px">
                             <span
                                 style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;
-              background:<?= rows[i][13]==='Positivo' ? 'rgba(0,200,83,0.15);color:#00c853' : rows[i][13]==='Negativo' ? 'rgba(255,82,82,0.15);color:#ff5252' : 'rgba(255,152,0,0.15);color:#ff9100' ?>">
-                                <?= rows[i][13] ?>
+              background:<?= rows[i][16]==='Positivo' ? 'rgba(16,185,129,0.15);color:#10b981' : rows[i][16]==='Negativo' ? 'rgba(239,68,68,0.15);color:#ef4444' : 'rgba(107,114,128,0.15);color:#6b7280' ?>">
+                                <?= rows[i][16] ?> (
+                                <?= rows[i][17] ?>)
                             </span>
                         </td>
                     </tr>
@@ -96,11 +113,10 @@
                 </table>
             </td>
         </tr>
-        <!-- Footer -->
         <tr>
-            <td style="padding:24px 32px;text-align:center;background:#fafafa;border-top:1px solid #eee">
+            <td style="padding:24px 32px;text-align:center;background:#f8fafc;border-top:1px solid #eee">
                 <p style="font-size:11px;color:#999;margin:0">
-                    Monitor de Opinión PARACEL · Monitoreo de Impacto Social<br>
+                    Monitor de Opinión PARACEL v2.0 · Monitoreo de Impacto Social<br>
                     Generado automáticamente el
                     <?= fecha ?>
                 </p>
